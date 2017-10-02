@@ -90,10 +90,14 @@ But this will::
 
     def some_callback(self, response):
         somearg = 'test'
-        return scrapy.Request('http://www.example.com', meta={'somearg': somearg})
+        return scrapy.Request('http://www.example.com', callback=self.other_callback, meta={'somearg': somearg})
 
     def other_callback(self, response):
         somearg = response.meta['somearg']
         print "the argument passed is:", somearg
+
+If you wish to log the requests that couldn't be serialized, you can set the
+:setting:`SCHEDULER_DEBUG` setting to ``True`` in the project's settings page.
+It is ``False`` by default.
 
 .. _pickle: http://docs.python.org/library/pickle.html

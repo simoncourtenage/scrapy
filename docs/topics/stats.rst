@@ -47,7 +47,7 @@ Set stat value::
 
 Increment stat value::
 
-    stats.inc_value('pages_crawled')
+    stats.inc_value('custom_count')
 
 Set stat value only if greater than previous::
 
@@ -59,13 +59,13 @@ Set stat value only if lower than previous::
 
 Get stat value::
 
-    >>> stats.get_value('pages_crawled')
-    8
+    >>> stats.get_value('custom_count')
+    1
 
 Get all stats::
 
     >>> stats.get_stats()
-    {'pages_crawled': 1238, 'start_time': datetime.datetime(2009, 7, 14, 21, 47, 28, 977139)}
+    {'custom_count': 1, 'start_time': datetime.datetime(2009, 7, 14, 21, 47, 28, 977139)}
 
 Available Stats Collectors
 ==========================
@@ -75,7 +75,7 @@ available in Scrapy which extend the basic Stats Collector. You can select
 which Stats Collector to use through the :setting:`STATS_CLASS` setting. The
 default Stats Collector used is the :class:`MemoryStatsCollector`. 
 
-.. module:: scrapy.statscol
+.. module:: scrapy.statscollectors
    :synopsis: Stats Collectors
 
 MemoryStatsCollector

@@ -121,3 +121,70 @@ def _clspath(cls, forced=None):
     if forced is not None:
         return forced
     return '{}.{}'.format(cls.__module__, cls.__name__)
+
+
+DEPRECATION_RULES = [
+    ('scrapy.contrib_exp.downloadermiddleware.decompression.', 'scrapy.downloadermiddlewares.decompression.'),
+    ('scrapy.contrib_exp.iterators.', 'scrapy.utils.iterators.'),
+    ('scrapy.contrib.downloadermiddleware.', 'scrapy.downloadermiddlewares.'),
+    ('scrapy.contrib.exporter.', 'scrapy.exporters.'),
+    ('scrapy.contrib.linkextractors.', 'scrapy.linkextractors.'),
+    ('scrapy.contrib.loader.processor.', 'scrapy.loader.processors.'),
+    ('scrapy.contrib.loader.', 'scrapy.loader.'),
+    ('scrapy.contrib.pipeline.', 'scrapy.pipelines.'),
+    ('scrapy.contrib.spidermiddleware.', 'scrapy.spidermiddlewares.'),
+    ('scrapy.contrib.spiders.', 'scrapy.spiders.'),
+    ('scrapy.contrib.', 'scrapy.extensions.'),
+    ('scrapy.command.', 'scrapy.commands.'),
+    ('scrapy.dupefilter.', 'scrapy.dupefilters.'),
+    ('scrapy.linkextractor.', 'scrapy.linkextractors.'),
+    ('scrapy.telnet.', 'scrapy.extensions.telnet.'),
+    ('scrapy.spider.', 'scrapy.spiders.'),
+    ('scrapy.squeue.', 'scrapy.squeues.'),
+    ('scrapy.statscol.', 'scrapy.statscollectors.'),
+    ('scrapy.utils.decorator.', 'scrapy.utils.decorators.'),
+    ('scrapy.spidermanager.SpiderManager', 'scrapy.spiderloader.SpiderLoader'),
+]
+
+
+def update_classpath(path):
+    """Update a deprecated path from an object with its new location"""
+    for prefix, replacement in DEPRECATION_RULES:
+        if path.startswith(prefix):
+            new_path = path.replace(prefix, replacement, 1)
+            warnings.warn("`{}` class is deprecated, use `{}` instead".format(path, new_path),
+                          ScrapyDeprecationWarning)
+            return new_path
+    return path
+
+
+def method_is_overridden(subclass, base_class, method_name):
+    """ 
+    Return True if a method named ``method_name`` of a ``base_class`` 
+    is overridden in a ``subclass``. 
+    
+    >>> class Base(object):
+    ...     def foo(self):
+    ...         pass
+    >>> class Sub1(Base):
+    ...     pass
+    >>> class Sub2(Base):
+    ...     def foo(self):
+    ...         pass
+    >>> class Sub3(Sub1):
+    ...     def foo(self):
+    ...         pass
+    >>> class Sub4(Sub2):
+    ...     pass
+    >>> method_is_overridden(Sub1, Base, 'foo')
+    False
+    >>> method_is_overridden(Sub2, Base, 'foo')
+    True
+    >>> method_is_overridden(Sub3, Base, 'foo')
+    True
+    >>> method_is_overridden(Sub4, Base, 'foo')
+    True
+    """
+    base_method = getattr(base_class, method_name)
+    sub_method = getattr(subclass, method_name)
+    return base_method.__code__ is not sub_method.__code__

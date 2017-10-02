@@ -6,11 +6,23 @@ This module must not depend on any module outside the Standard Library.
 """
 
 import copy
-from collections import OrderedDict
+import six
+import warnings
+from collections import OrderedDict, Mapping
+
+from scrapy.exceptions import ScrapyDeprecationWarning
 
 
 class MultiValueDictKeyError(KeyError):
-    pass
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "scrapy.utils.datatypes.MultiValueDictKeyError is deprecated "
+            "and will be removed in future releases.",
+            category=ScrapyDeprecationWarning,
+            stacklevel=2
+        )
+        super(MultiValueDictKeyError, self).__init__(*args, **kwargs)
+
 
 class MultiValueDict(dict):
     """
@@ -30,6 +42,10 @@ class MultiValueDict(dict):
     single name-value pairs.
     """
     def __init__(self, key_to_list_mapping=()):
+        warnings.warn("scrapy.utils.datatypes.MultiValueDict is deprecated "
+                      "and will be removed in future releases.",
+                      category=ScrapyDeprecationWarning,
+                      stacklevel=2)
         dict.__init__(self, key_to_list_mapping)
 
     def __repr__(self):
@@ -133,13 +149,21 @@ class MultiValueDict(dict):
                         self.setlistdefault(key, []).append(value)
                 except TypeError:
                     raise ValueError("MultiValueDict.update() takes either a MultiValueDict or dictionary")
-        for key, value in kwargs.iteritems():
+        for key, value in six.iteritems(kwargs):
             self.setlistdefault(key, []).append(value)
+
 
 class SiteNode(object):
     """Class to represent a site node (page, image or any other file)"""
 
     def __init__(self, url):
+        warnings.warn(
+            "scrapy.utils.datatypes.SiteNode is deprecated "
+            "and will be removed in future releases.",
+            category=ScrapyDeprecationWarning,
+            stacklevel=2
+        )
+
         self.url = url
         self.itemnames = []
         self.children = []
@@ -200,7 +224,7 @@ class CaselessDict(dict):
         return dict.setdefault(self, self.normkey(key), self.normvalue(def_val))
 
     def update(self, seq):
-        seq = seq.iteritems() if isinstance(seq, dict) else seq
+        seq = seq.items() if isinstance(seq, Mapping) else seq
         iseq = ((self.normkey(k), self.normvalue(v)) for k, v in seq)
         super(CaselessDict, self).update(iseq)
 
@@ -280,3 +304,13 @@ class LocalCache(OrderedDict):
         while len(self) >= self.limit:
             self.popitem(last=False)
         super(LocalCache, self).__setitem__(key, value)
+
+
+class SequenceExclude(object):
+    """Object to test if an item is NOT within some sequence."""
+
+    def __init__(self, seq):
+        self.seq = seq
+
+    def __contains__(self, item):
+        return item not in self.seq

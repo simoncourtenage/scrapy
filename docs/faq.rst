@@ -3,6 +3,8 @@
 Frequently Asked Questions
 ==========================
 
+.. _faq-scrapy-bs-cmp:
+
 How does Scrapy compare to BeautifulSoup or lxml?
 -------------------------------------------------
 
@@ -21,31 +23,66 @@ comparing `jinja2`_ to `Django`_.
 
 .. _BeautifulSoup: http://www.crummy.com/software/BeautifulSoup/
 .. _lxml: http://lxml.de/
-.. _jinja2: http://jinja.pocoo.org/2/
-.. _Django: http://www.djangoproject.com
+.. _jinja2: http://jinja.pocoo.org/
+.. _Django: https://www.djangoproject.com/
+
+Can I use Scrapy with BeautifulSoup?
+------------------------------------
+
+Yes, you can.
+As mentioned :ref:`above <faq-scrapy-bs-cmp>`, `BeautifulSoup`_ can be used
+for parsing HTML responses in Scrapy callbacks.
+You just have to feed the response's body into a ``BeautifulSoup`` object
+and extract whatever data you need from it.
+
+Here's an example spider using BeautifulSoup API, with ``lxml`` as the HTML parser::
+
+
+    from bs4 import BeautifulSoup
+    import scrapy
+
+
+    class ExampleSpider(scrapy.Spider):
+        name = "example"
+        allowed_domains = ["example.com"]
+        start_urls = (
+            'http://www.example.com/',
+        )
+
+        def parse(self, response):
+            # use lxml to get decent HTML parsing speed
+            soup = BeautifulSoup(response.text, 'lxml')
+            yield {
+                "url": response.url,
+                "title": soup.h1.string
+            }
+
+.. note::
+
+    ``BeautifulSoup`` supports several HTML/XML parsers.
+    See `BeautifulSoup's official documentation`_ on which ones are available.
+
+.. _BeautifulSoup's official documentation: https://www.crummy.com/software/BeautifulSoup/bs4/doc/#specifying-the-parser-to-use
 
 .. _faq-python-versions:
 
 What Python versions does Scrapy support?
 -----------------------------------------
 
-Scrapy is supported under Python 2.7 only.
+Scrapy is supported under Python 2.7 and Python 3.3+.
 Python 2.6 support was dropped starting at Scrapy 0.20.
+Python 3 support was added in Scrapy 1.1.
 
-Does Scrapy work with Python 3?
----------------------------------
-
-No, but there are plans to support Python 3.3+.
-At the moment, Scrapy works with Python 2.7.
-
-.. seealso:: :ref:`faq-python-versions`.
+.. note::
+    For Python 3 support on Windows, it is recommended to use
+    Anaconda/Miniconda as :ref:`outlined in the installation guide <intro-install-windows>`.
 
 Did Scrapy "steal" X from Django?
 ---------------------------------
 
 Probably, but we don't like that word. We think Django_ is a great open source
 project and an example to follow, so we've used it as an inspiration for
-Scrapy. 
+Scrapy.
 
 We believe that, if something is already done well, there's no need to reinvent
 it. This concept, besides being one of the foundations for open source and free
@@ -57,14 +94,12 @@ focus on the real problems we need to solve.
 We'd be proud if Scrapy serves as an inspiration for other projects. Feel free
 to steal from us!
 
-.. _Django: http://www.djangoproject.com
-
 Does Scrapy work with HTTP proxies?
 -----------------------------------
 
 Yes. Support for HTTP proxies is provided (since Scrapy 0.8) through the HTTP
 Proxy downloader middleware. See
-:class:`~scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware`.
+:class:`~scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware`.
 
 How can I scrape an item with attributes in different pages?
 ------------------------------------------------------------
@@ -77,13 +112,15 @@ Scrapy crashes with: ImportError: No module named win32api
 
 You need to install `pywin32`_ because of `this Twisted bug`_.
 
-.. _pywin32: http://sourceforge.net/projects/pywin32/
-.. _this Twisted bug: http://twistedmatrix.com/trac/ticket/3707
+.. _pywin32: https://sourceforge.net/projects/pywin32/
+.. _this Twisted bug: https://twistedmatrix.com/trac/ticket/3707
 
 How can I simulate a user login in my spider?
 ---------------------------------------------
 
 See :ref:`topics-request-response-ref-request-userlogin`.
+
+.. _faq-bfo-dfo:
 
 Does Scrapy crawl in breadth-first or depth-first order?
 --------------------------------------------------------
@@ -94,8 +131,8 @@ in most cases. If you do want to crawl in true `BFO order`_, you can do it by
 setting the following settings::
 
     DEPTH_PRIORITY = 1
-    SCHEDULER_DISK_QUEUE = 'scrapy.squeue.PickleFifoDiskQueue'
-    SCHEDULER_MEMORY_QUEUE = 'scrapy.squeue.FifoMemoryQueue'
+    SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
+    SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
 
 My Scrapy crawler has memory leaks. What can I do?
 --------------------------------------------------
@@ -113,7 +150,7 @@ See previous question.
 Can I use Basic HTTP Authentication in my spiders?
 --------------------------------------------------
 
-Yes, see :class:`~scrapy.contrib.downloadermiddleware.httpauth.HttpAuthMiddleware`.
+Yes, see :class:`~scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware`.
 
 Why does Scrapy download pages in English instead of my native language?
 ------------------------------------------------------------------------
@@ -121,7 +158,7 @@ Why does Scrapy download pages in English instead of my native language?
 Try changing the default `Accept-Language`_ request header by overriding the
 :setting:`DEFAULT_REQUEST_HEADERS` setting.
 
-.. _Accept-Language: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
+.. _Accept-Language: https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
 
 Where can I find some example Scrapy projects?
 ----------------------------------------------
@@ -144,23 +181,23 @@ I get "Filtered offsite request" messages. How can I fix them?
 Those messages (logged with ``DEBUG`` level) don't necessarily mean there is a
 problem, so you may not need to fix them.
 
-Those message are thrown by the Offsite Spider Middleware, which is a spider
+Those messages are thrown by the Offsite Spider Middleware, which is a spider
 middleware (enabled by default) whose purpose is to filter out requests to
 domains outside the ones covered by the spider.
 
 For more info see:
-:class:`~scrapy.contrib.spidermiddleware.offsite.OffsiteMiddleware`.
+:class:`~scrapy.spidermiddlewares.offsite.OffsiteMiddleware`.
 
 What is the recommended way to deploy a Scrapy crawler in production?
 ---------------------------------------------------------------------
 
-See :ref:`topics-scrapyd`.
+See :ref:`topics-deploy`.
 
 Can I use JSON for large exports?
 ---------------------------------
 
 It'll depend on how large your output is. See :ref:`this warning
-<json-with-large-data>` in :class:`~scrapy.contrib.exporter.JsonItemExporter`
+<json-with-large-data>` in :class:`~scrapy.exporters.JsonItemExporter`
 documentation.
 
 Can I return (Twisted) deferreds from signal handlers?
@@ -190,7 +227,7 @@ Or by setting a global download delay in your project with the
 Can I call ``pdb.set_trace()`` from my spiders to debug them?
 -------------------------------------------------------------
 
-Yes, but you can also use the Scrapy shell which allows you too quickly analyze
+Yes, but you can also use the Scrapy shell which allows you to quickly analyze
 (and even modify) the response being processed by your spider, which is, quite
 often, more useful than plain old ``pdb.set_trace()``.
 
@@ -221,7 +258,7 @@ more info on how it works see `this page`_. Also, here's an `example spider`_
 which scrapes one of these sites.
 
 .. _this page: http://search.cpan.org/~ecarroll/HTML-TreeBuilderX-ASP_NET-0.09/lib/HTML/TreeBuilderX/ASP_NET.pm
-.. _example spider: http://github.com/AmbientLighter/rpn-fas/blob/master/fas/spiders/rnp.py
+.. _example spider: https://github.com/AmbientLighter/rpn-fas/blob/master/fas/spiders/rnp.py
 
 What's the best way to parse big XML/CSV data feeds?
 ----------------------------------------------------
@@ -280,38 +317,7 @@ I'm scraping a XML document and my XPath selector doesn't return any items
 
 You may need to remove namespaces. See :ref:`removing-namespaces`.
 
-
-I'm getting an error: "cannot import name crawler"
---------------------------------------------------
-
-This is caused by Scrapy changes due to the singletons removal. The error is
-most likely raised by a module (extension, middleware, pipeline or spider) in
-your Scrapy project that imports ``crawler`` from ``scrapy.project``. For
-example::
-
-    from scrapy.project import crawler
-
-    class SomeExtension(object):
-        def __init__(self):
-            self.crawler = crawler
-            # ...
-
-This way to access the crawler object is deprecated, the code should be ported
-to use ``from_crawler`` class method, for example::
-
-    class SomeExtension(object):
-
-        @classmethod
-        def from_crawler(cls, crawler):
-            o = cls()
-            o.crawler = crawler
-            return o
-
-Scrapy command line tool has some backwards compatibility in place to support
-the old import mechanism (with a deprecation warning), but this mechanism may
-not work if you use Scrapy differently (for example, as a library).
-
-.. _user agents: http://en.wikipedia.org/wiki/User_agent
-.. _LIFO: http://en.wikipedia.org/wiki/LIFO
-.. _DFO order: http://en.wikipedia.org/wiki/Depth-first_search
-.. _BFO order: http://en.wikipedia.org/wiki/Breadth-first_search
+.. _user agents: https://en.wikipedia.org/wiki/User_agent
+.. _LIFO: https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
+.. _DFO order: https://en.wikipedia.org/wiki/Depth-first_search
+.. _BFO order: https://en.wikipedia.org/wiki/Breadth-first_search

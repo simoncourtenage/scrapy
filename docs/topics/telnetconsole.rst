@@ -4,7 +4,7 @@
 Telnet Console
 ==============
 
-.. module:: scrapy.telnet
+.. module:: scrapy.extensions.telnet
    :synopsis: The Telnet Console
 
 Scrapy comes with a built-in telnet console for inspecting and controlling a
@@ -66,7 +66,7 @@ convenience:
 | ``hpy``        | for memory debugging (see :ref:`topics-leaks`)                    |
 +----------------+-------------------------------------------------------------------+
 
-.. _pprint.pprint: http://docs.python.org/library/pprint.html#pprint.pprint
+.. _pprint.pprint: https://docs.python.org/library/pprint.html#pprint.pprint
 
 Telnet console usage examples
 =============================
